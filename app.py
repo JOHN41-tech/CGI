@@ -6,6 +6,10 @@ from backend.api.perplexity import PerplexityClient
 import backend.utils.database as db
 from backend.utils.quiz_generator import QuizGenerator
 import json
+from pypdf import PdfReader
+import docx
+import io
+from backend.utils.mock_test import MockTestGenerator
 
 load_dotenv()
 
@@ -18,6 +22,7 @@ app.secret_key = os.getenv('SECRET_KEY', os.urandom(24))
 sessions = {}
 quiz_gen = QuizGenerator()
 perplexity_client = PerplexityClient()
+mock_test_gen = MockTestGenerator()
 
 @app.route('/')
 def index():
@@ -400,6 +405,103 @@ def get_resources():
             ]
         })
 
+@app.route('/api/generate-assessment', methods=['POST'])
+def generate_assessment():
+    """Generate career assessment questions"""
+    try:
+        prompt = """Create a comprehensive career path assessment test. 
+        Generate 10 questions that help identify a person's interests, strengths, and ideal career domain (e.g., Software Engineering, Data Science, Cyber Security, UI/UX Design, Digital Marketing, Artificial Intelligence).
+        For each question, provide 4 distinct options that map toward different career paths.
+        
+        Format your response EXACTLY as a JSON list of objects:
+        [
+          {
+            "id": 1,
+            "question": "Question text here",
+            "options": {
+              "A": "Option A text",
+              "B": "Option B text",
+              "C": "Option C text",
+              "D": "Option D text"
+            }
+          },
+          ...
+        ]
+        Return ONLY the JSON list."""
+        
+        messages = [{"role": "user", "content": prompt}]
+        response = perplexity_client.chat_completion(messages)
+        ai_response = response['choices'][0]['message']['content']
+        
+        # Extract JSON
+        if "```json" in ai_response:
+            ai_response = ai_response.split("```json")[1].split("```")[0].strip()
+        elif "```" in ai_response:
+            ai_response = ai_response.split("```")[1].split("```")[0].strip()
+            
+        questions = json.loads(ai_response)
+        
+        return jsonify({
+            'success': True,
+            'questions': questions
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/analyze-assessment', methods=['POST'])
+def analyze_assessment():
+    """Analyze assessment answers and suggest a career domain"""
+    data = request.json
+    answers = data.get('answers')
+    questions = data.get('questions')
+    
+    if not answers or not questions:
+        return jsonify({'error': 'Answers and questions are required'}), 400
+        
+    try:
+        # Prepare data for AI analysis
+        analysis_data = []
+        for i, q in enumerate(questions):
+            ans_key = answers.get(str(i))
+            if ans_key:
+                analysis_data.append({
+                    "question": q['question'],
+                    "answer": q['options'][ans_key]
+                })
+        
+        prompt = f"""Based on the following career assessment answers, recommend the single best career domain for this user.
+        Consider these domains: Software Engineering, Data Science, Cyber Security, UI/UX Design, Digital Marketing, Artificial Intelligence, Product Management.
+        
+        Answers:
+        {json.dumps(analysis_data, indent=2)}
+        
+        Return your response EXACTLY as a JSON object:
+        {{
+          "recommendedDomain": "Domain Name",
+          "explanation": "Brief 2-3 sentence explanation of why this fits.",
+          "startingTopic": "The best technical topic to start with (e.g., 'Python Programming' for Data Science)"
+        }}
+        Return ONLY the JSON object."""
+        
+        messages = [{"role": "user", "content": prompt}]
+        response = perplexity_client.chat_completion(messages)
+        ai_response = response['choices'][0]['message']['content']
+        
+        # Extract JSON
+        if "```json" in ai_response:
+            ai_response = ai_response.split("```json")[1].split("```")[0].strip()
+        elif "```" in ai_response:
+            ai_response = ai_response.split("```")[1].split("```")[0].strip()
+            
+        result = json.loads(ai_response)
+        
+        return jsonify({
+            'success': True,
+            'result': result
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/clear-chat', methods=['POST'])
 def clear_chat():
     """Clear chat history for current step"""
@@ -416,6 +518,207 @@ def clear_chat():
         return jsonify({'success': True})
     
     return jsonify({'error': 'No topic selected'}), 400
+
+@app.route('/resume-analyzer')
+def resume_analyzer():
+    return render_template('resume.html')
+
+@app.route('/api/analyze-resume', methods=['POST'])
+def analyze_resume():
+    if 'resume' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+    
+    file = request.files['resume']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    try:
+        text = ""
+        if file.filename.endswith('.pdf'):
+            reader = PdfReader(file)
+            for page in reader.pages:
+                text += page.extract_text()
+        elif file.filename.endswith('.docx'):
+            doc = docx.Document(file)
+            for para in doc.paragraphs:
+                text += para.text + "\n"
+        else:
+            return jsonify({'error': 'Unsupported file format'}), 400
+        
+        if len(text.strip()) < 50:
+            return jsonify({'error': 'Could not extract enough text from resume'}), 400
+
+        # AI Analysis
+        prompt = f"""You are an expert ATS (Applicant Tracking System) and Career Coach. 
+        Analyze the following resume text and provide a detailed review.
+        
+        Resume Content:
+        {text[:4000]} # Limit text for API tokens
+        
+        Return your response EXACTLY as a JSON object:
+        {{
+          "atsScore": 85, (a number between 0-100)
+          "verdict": "Strong Match", (e.g., Needs Work, Fair, Strong Match, Elite)
+          "verdictText": "One sentence summary about ATS compatibility.",
+          "strengths": ["list of 3 points"],
+          "improvements": ["list of 3 points"],
+          "recommendations": ["list of 3 points"]
+        }}
+        Return ONLY the JSON object."""
+        
+        messages = [{"role": "user", "content": prompt}]
+        response = perplexity_client.chat_completion(messages)
+        ai_response = response['choices'][0]['message']['content']
+        
+        # Extract JSON
+        if "```json" in ai_response:
+            ai_response = ai_response.split("```json")[1].split("```")[0].strip()
+        elif "```" in ai_response:
+            ai_response = ai_response.split("```")[1].split("```")[0].strip()
+            
+        analysis = json.loads(ai_response)
+        
+        return jsonify({
+            'success': True,
+            'analysis': analysis
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/job-market')
+def job_market():
+    return render_template('market.html')
+
+@app.route('/mock-test')
+def mock_test():
+    return render_template('mock_test.html')
+
+@app.route('/api/generate-mock-test', methods=['POST'])
+def generate_mock_test():
+    session_id = request.cookies.get('session_id')
+    topic_id = request.cookies.get('topic_id')
+    
+    domain = "Software Engineering"  # Default
+    if session_id in sessions:
+        domain = sessions[session_id].roadmap.topic
+    elif topic_id:
+        topic_data = db.get_topic(int(topic_id))
+        if topic_data:
+            domain = topic_data['name']
+            
+    try:
+        test_data = mock_test_gen.generate_mock_test(domain)
+        return jsonify({
+            'success': True,
+            'data': test_data,
+            'domain': domain
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/evaluate-mock-test', methods=['POST'])
+def evaluate_mock_test():
+    data = request.json
+    topic = data.get('topic')
+    mcq_answers = data.get('mcq_answers', {})
+    subjective_answers = data.get('subjective_answers', {})
+    questions = data.get('questions')
+    
+    if not questions:
+        return jsonify({'error': 'Questions are required for evaluation'}), 400
+        
+    try:
+        results = mock_test_gen.evaluate_test(topic, mcq_answers, subjective_answers, questions)
+        return jsonify({
+            'success': True,
+            'results': results
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/job-market-data', methods=['GET'])
+def get_job_market_data():
+    topic_id = request.cookies.get('topic_id')
+    session_id = request.cookies.get('session_id')
+    
+    # Get the current domain/topic context
+    domain = "Software Engineering" # Default
+    if session_id in sessions:
+        domain = sessions[session_id].roadmap.topic
+    elif topic_id:
+        topic_data = db.get_topic(int(topic_id))
+        if topic_data:
+            domain = topic_data['name']
+
+    try:
+        prompt = f"""Provide a real-time comprehensive job market analysis for the domain: {domain} and general tech trends for 2026.
+        
+        TASK: Find 3 ACTUAL internships and 3 ACTUAL job openings for {domain}.
+        
+        LINK RELIABILITY RULES:
+        1. INTERNSHIPS: Try to provide direct URLs.
+        2. JOBS: To prevent "No Match Found", use these exact search templates if a direct URL is unavailable:
+           - LinkedIn: https://www.linkedin.com/jobs/search/?keywords={{Job+Title}}+at+{{Company}}
+           - Indeed: https://www.indeed.com/jobs?q={{Job+Title}}+{{Company}}
+        3. Replace {{Job+Title}} and {{Company}} with the actual values (use + for spaces).
+        4. ONLY return legitimate, currently active companies.
+        
+        Return your response EXACTLY as a JSON object with this structure:
+        {{
+          "trends": {{
+            "labels": ["Domain 1", "Domain 2", "Domain 3", "Domain 4", "Domain 5"],
+            "values": [number1-100, number2-100, number3-100, number4-100, number5-100]
+          }},
+          "domainTraffic": {{
+            "labels": ["Month 1", "Month 2", "Month 3", "Month 4", "Month 5", "Month 6"],
+            "values": [number1, number2, number3, number4, number5, number6]
+          }},
+          "salaries": {{
+            "fresher": "$60k - $80k",
+            "experienced": "$120k - $180k"
+          }},
+          "summaryNews": "A 3-4 sentence paragraph summarizing current market sentiment, hiring trends, and news for {domain}.",
+          "internships": [
+            {{
+              "title": "Verified Internship Title",
+              "company": "Company Name",
+              "location": "Location",
+              "platform": "LinkedIn or Indeed",
+              "url": "application_or_search_url"
+            }}
+          ],
+          "jobs": [
+            {{
+              "title": "Verified Job Title",
+              "company": "Company Name",
+              "location": "Location",
+              "platform": "LinkedIn or Indeed",
+              "url": "application_or_search_url"
+            }}
+          ]
+        }}
+        Ensure the 'values' are realistic demand scores based on 2026 data.
+        Return ONLY the JSON object."""
+        
+        messages = [{"role": "user", "content": prompt}]
+        response = perplexity_client.chat_completion(messages)
+        ai_response = response['choices'][0]['message']['content']
+        
+        # Extract JSON
+        if "```json" in ai_response:
+            ai_response = ai_response.split("```json")[1].split("```")[0].strip()
+        elif "```" in ai_response:
+            ai_response = ai_response.split("```")[1].split("```")[0].strip()
+            
+        data = json.loads(ai_response)
+        data['domain'] = domain
+        
+        return jsonify({
+            'success': True,
+            'data': data
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))

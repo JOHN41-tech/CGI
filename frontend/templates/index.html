@@ -36,57 +36,77 @@
                     </p>
                 </header>
 
-                <!-- Statistics Dashboard -->
-                <div class="stats-dashboard animated-fade-in-delayed">
-                    <div class="stat-item">
-                        <span class="stat-value" id="stat-total-topics">0</span>
-                        <span class="stat-label">Topics Started</span>
+                <!-- Career Assessment Section -->
+                <div id="assessment-section" class="assessment-card animated-zoom-in">
+                    <div id="assessment-intro">
+                        <h2>Discover Your Career Path</h2>
+                        <p>Take our AI-powered assessment to find the perfect tech domain based on your strengths and
+                            interests.</p>
+                        <button id="start-assessment-btn" class="btn-primary">
+                            <i class="fas fa-compass"></i> Start Assessment
+                        </button>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-value" id="stat-completed-topics">0</span>
-                        <span class="stat-label">Mastered</span>
+
+                    <div id="assessment-questions" class="hidden">
+                        <div class="assessment-progress">
+                            <div class="progress-bar">
+                                <div id="assessment-progress-fill" class="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <span id="assessment-question-count">Question 1 of 10</span>
+                        </div>
+                        <div id="question-container">
+                            <!-- Populated by JS -->
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-value" id="stat-total-progress">0%</span>
-                        <span class="stat-label">Overall Progress</span>
+
+                    <div id="assessment-results" class="hidden">
+                        <div class="result-header">
+                            <i class="fas fa-trophy"></i>
+                            <h3>Your Career Match</h3>
+                        </div>
+                        <div id="result-content" class="result-body">
+                            <h2 id="recommended-domain" class="recommended-title"></h2>
+                            <p id="domain-explanation" class="explanation-text"></p>
+                            <div class="next-steps">
+                                <p>Recommended starting topic: <strong id="starting-topic"
+                                        class="topic-highlight"></strong></p>
+                                <button id="start-discovery-btn" class="btn-primary">
+                                    <i class="fas fa-rocket"></i> Start Career Path
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="welcome-card animated-zoom-in">
-                    <h2>What would you like to learn?</h2>
-
-                    <!-- Advanced Options -->
-                    <div class="advanced-options">
-                        <div class="option-item">
-                            <label><i class="fas fa-user-graduate"></i> Persona</label>
-                            <select id="persona-select">
-                                <option value="General">General</option>
-                                <option value="Scientist">Scientist</option>
-                                <option value="ELI5">ELI5 (Simple)</option>
-                                <option value="Socratic">Socratic</option>
-                            </select>
+                <!-- Hidden Original Start Options (for reference or manual entry) -->
+                <div id="manual-topic-entry" class="hidden">
+                    <div class="welcome-card animated-zoom-in">
+                        <h2>Or enter a topic manually</h2>
+                        <div class="advanced-options">
+                            <div class="option-item">
+                                <label><i class="fas fa-user-graduate"></i> Persona</label>
+                                <select id="persona-select">
+                                    <option value="General">General</option>
+                                    <option value="Scientist">Scientist</option>
+                                    <option value="ELI5">ELI5 (Simple)</option>
+                                    <option value="Socratic">Socratic</option>
+                                </select>
+                            </div>
+                            <div class="option-item">
+                                <label><i class="fas fa-layer-group"></i> Difficulty</label>
+                                <select id="difficulty-select">
+                                    <option value="Beginner">Beginner</option>
+                                    <option value="Intermediate" selected>Intermediate</option>
+                                    <option value="Advanced">Advanced</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="option-item">
-                            <label><i class="fas fa-layer-group"></i> Difficulty</label>
-                            <select id="difficulty-select">
-                                <option value="Beginner">Beginner</option>
-                                <option value="Intermediate" selected>Intermediate</option>
-                                <option value="Advanced">Advanced</option>
-                            </select>
+                        <div class="input-group">
+                            <input type="text" id="topic-input" placeholder="Enter any topic..." />
+                            <button id="start-btn" class="btn-primary">
+                                <i class="fas fa-rocket"></i> Start Learning
+                            </button>
                         </div>
-                    </div>
-
-                    <div class="input-group">
-                        <input type="text" id="topic-input" placeholder="Enter any topic..." />
-                        <button id="start-btn" class="btn-primary">
-                            <i class="fas fa-rocket"></i> Start Learning
-                        </button>
-                    </div>
-                    <div class="examples">
-                        <span class="example-label">Try:</span>
-                        <button class="example-btn" data-topic="Machine Learning">Machine Learning</button>
-                        <button class="example-btn" data-topic="Quantum Physics">Quantum Physics</button>
-                        <button class="example-btn" data-topic="Web Development">Web Development</button>
                     </div>
                 </div>
             </div>
@@ -115,49 +135,106 @@
                     </div>
                 </div>
 
-                <div class="sidebar-tabs">
-                    <button class="tab-btn active" data-tab="notes">
-                        <i class="fas fa-sticky-note"></i> Notes
-                    </button>
-                    <button class="tab-btn" data-tab="chat">
-                        <i class="fas fa-comments"></i> Chat
-                    </button>
-                    <button class="tab-btn" data-tab="quiz">
-                        <i class="fas fa-question-circle"></i> Quiz
-                    </button>
-                </div>
-
-                <!-- Notes Tab -->
-                <div class="tab-content active" id="notes-tab">
-                    <textarea id="notes-textarea" placeholder="Write your notes here..."></textarea>
-                    <button id="save-note-btn" class="btn-secondary btn-sm">
-                        <i class="fas fa-save"></i> Save Note
-                    </button>
-                </div>
-
-                <!-- Chat Tab -->
-                <div class="tab-content" id="chat-tab">
-                    <div class="chat-header-actions">
-                        <button id="clear-chat-btn" class="btn-text btn-sm">
-                            <i class="fas fa-trash-alt"></i> Clear Chat
-                        </button>
+                <!-- Sidebar Action Tools (Expanding Buttons) -->
+                <div class="sidebar-action-tools">
+                    <div class="tool-card" id="notes-tool-card" data-tool="notes">
+                        <div class="tool-btn">
+                            <div class="tool-btn-left">
+                                <i class="fas fa-sticky-note"></i>
+                                <span>Notes</span>
+                            </div>
+                        </div>
+                        <div class="tool-panel">
+                            <textarea id="notes-textarea" placeholder="Write your notes here..."></textarea>
+                            <button id="save-note-btn" class="btn-secondary btn-sm">
+                                <i class="fas fa-save"></i> Save Note
+                            </button>
+                        </div>
                     </div>
-                    <div id="chat-messages" class="chat-messages"></div>
-                    <div class="chat-input-group">
-                        <input type="text" id="chat-input" placeholder="Ask a question..." />
-                        <button id="send-chat-btn" class="btn-primary btn-sm">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </div>
 
-                <!-- Quiz Tab -->
-                <div class="tab-content" id="quiz-tab">
-                    <div id="quiz-container">
-                        <button id="generate-quiz-btn" class="btn-primary">
-                            <i class="fas fa-brain"></i> Generate Quiz
-                        </button>
-                        <div id="quiz-content" class="hidden"></div>
+                    <div class="tool-card" id="chat-tool-card" data-tool="chat">
+                        <div class="tool-btn">
+                            <div class="tool-btn-left">
+                                <i class="fas fa-comments"></i>
+                                <span>AI Bot</span>
+                            </div>
+                        </div>
+                        <div class="tool-panel">
+                            <div class="chat-header-actions">
+                                <button id="clear-chat-btn" class="btn-text btn-sm">
+                                    <i class="fas fa-trash-alt"></i> Clear
+                                </button>
+                            </div>
+                            <div id="chat-messages" class="chat-messages"></div>
+                            <div class="chat-input-group">
+                                <input type="text" id="chat-input" placeholder="Ask AI..." />
+                                <button id="send-chat-btn" class="btn-primary btn-sm">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool-card" id="quiz-tool-card" data-tool="quiz">
+                        <div class="tool-btn">
+                            <div class="tool-btn-left">
+                                <i class="fas fa-brain"></i>
+                                <span>Quiz</span>
+                            </div>
+                        </div>
+                        <div class="tool-panel">
+                            <div id="quiz-container">
+                                <button id="generate-quiz-btn" class="btn-primary">
+                                    <i class="fas fa-bolt"></i> Generate Quiz
+                                </button>
+                                <div id="quiz-content" class="hidden"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool-card" id="resume-tool-card" data-tool="resume">
+                        <div class="tool-btn">
+                            <div class="tool-btn-left">
+                                <i class="fas fa-file-invoice"></i>
+                                <span>Resume AI</span>
+                            </div>
+                        </div>
+                        <div class="tool-panel">
+                            <a href="/resume-analyzer" target="_blank" class="btn-primary btn-sm"
+                                style="text-decoration: none; width: 100%; justify-content: center;">
+                                <i class="fas fa-external-link-alt"></i> Open Analyzer
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="tool-card" id="market-tool-card" data-tool="market">
+                        <div class="tool-btn">
+                            <div class="tool-btn-left">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Job Market</span>
+                            </div>
+                        </div>
+                        <div class="tool-panel">
+                            <a href="/job-market" target="_blank" class="btn-primary btn-sm"
+                                style="text-decoration: none; width: 100%; justify-content: center; background: var(--success-color);">
+                                <i class="fas fa-globe"></i> Live Trends
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="tool-card" id="mock-test-tool-card" data-tool="mock-test">
+                        <div class="tool-btn">
+                            <div class="tool-btn-left">
+                                <i class="fas fa-vial"></i>
+                                <span>Mock Test</span>
+                            </div>
+                        </div>
+                        <div class="tool-panel">
+                            <a href="/mock-test" target="_blank" class="btn-primary btn-sm"
+                                style="text-decoration: none; width: 100%; justify-content: center; background: var(--primary-color);">
+                                <i class="fas fa-pen-nib"></i> Start Test
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -218,6 +295,7 @@
                             Next <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
+
                 </div>
             </div>
 
@@ -300,9 +378,8 @@
                 <button id="close-quiz-results-btn" class="btn-primary">Close</button>
             </div>
         </div>
-    </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 
 </html>

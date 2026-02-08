@@ -71,6 +71,24 @@ const nextCardBtn = document.getElementById('next-card-btn');
 const resourcesList = document.getElementById('resources-list');
 const roadmapMinimap = document.getElementById('roadmap-minimap');
 
+// Career Assessment Elements
+const assessmentSection = document.getElementById('assessment-section');
+const assessmentIntro = document.getElementById('assessment-intro');
+const assessmentQuestions = document.getElementById('assessment-questions');
+const assessmentResults = document.getElementById('assessment-results');
+const assessmentProgressFill = document.getElementById('assessment-progress-fill');
+const assessmentQuestionCount = document.getElementById('assessment-question-count');
+const questionContainer = document.getElementById('question-container');
+const startAssessmentBtn = document.getElementById('start-assessment-btn');
+const startDiscoveryBtn = document.getElementById('start-discovery-btn');
+const recommendedDomain = document.getElementById('recommended-domain');
+const domainExplanation = document.getElementById('domain-explanation');
+const startingTopic = document.getElementById('starting-topic');
+
+let assessmentData = null;
+let assessmentAnswers = {};
+let currentAssessmentIndex = 0;
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadStats();
@@ -106,12 +124,15 @@ if (nextBtn) nextBtn.addEventListener('click', nextStep);
 if (newTopicBtn) newTopicBtn.addEventListener('click', resetToStart);
 if (exportBtn) exportBtn.addEventListener('click', exportHandbook);
 
-// Tab switching
-tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const tabName = btn.dataset.tab;
-        switchTab(tabName);
-    });
+// Action Tool Cards (Expanding Buttons)
+document.querySelectorAll('.tool-card').forEach(card => {
+    const btn = card.querySelector('.tool-btn');
+    if (btn) {
+        btn.addEventListener('click', () => {
+            const toolName = card.dataset.tool;
+            toggleTool(toolName);
+        });
+    }
 });
 
 // Notes
@@ -141,6 +162,13 @@ if (prevCardBtn) prevCardBtn.addEventListener('click', (e) => {
 if (nextCardBtn) nextCardBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     nextFlashcard();
+});
+
+// Assessment Listeners
+if (startAssessmentBtn) startAssessmentBtn.addEventListener('click', startAssessment);
+if (startDiscoveryBtn) startDiscoveryBtn.addEventListener('click', () => {
+    topicInput.value = startingTopic.textContent;
+    startLearning();
 });
 
 // Mobile Sidebar Toggles
@@ -211,13 +239,47 @@ if (rightSidebar) {
     });
 }
 
-function switchTab(tabName) {
-    tabBtns.forEach(btn => btn.classList.remove('active'));
-    tabContents.forEach(content => content.classList.remove('active'));
+function toggleTool(toolName) {
+    const targetCard = document.getElementById(`${toolName}-tool-card`);
+    const alreadyExpanded = targetCard.classList.contains('expanded');
 
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-    document.getElementById(`${tabName}-tab`).classList.add('active');
+    // Collapse all tools first
+    document.querySelectorAll('.tool-card').forEach(card => {
+        card.classList.remove('expanded');
+    });
+
+    if (!alreadyExpanded) {
+        targetCard.classList.add('expanded');
+
+        // Auto-focus logic
+        if (toolName === 'chat') {
+            setTimeout(() => {
+                const input = document.getElementById('chat-input');
+                if (input) input.focus();
+            }, 600);
+        } else if (toolName === 'notes') {
+            setTimeout(() => {
+                const area = document.getElementById('notes-textarea');
+                if (area) area.focus();
+            }, 600);
+        }
+
+        // Scroll into view
+        setTimeout(() => {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 300);
+    }
 }
+
+// Global click event to prevent tool closing when clicking inside panel
+document.addEventListener('DOMContentLoaded', () => {
+    // We already have some logic here, so let's just add the stopPropagation part
+    document.querySelectorAll('.tool-panel').forEach(panel => {
+        panel.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    });
+});
 
 async function loadStats() {
     try {
@@ -774,4 +836,124 @@ function showLoading() {
     startScreen.classList.remove('active');
     learningScreen.classList.remove('active');
     loading.classList.remove('hidden');
+}
+
+// Career Assessment Logic
+async function startAssessment() {
+    assessmentIntro.classList.add('hidden');
+    assessmentQuestions.classList.remove('hidden');
+    questionContainer.innerHTML = '<div class="guide-loading"><i class="fas fa-spinner fa-spin"></i><p>Generating Assessment...</p></div>';
+
+    try {
+        const response = await fetch('/api/generate-assessment', { method: 'POST' });
+        const data = await response.json();
+
+        if (data.success) {
+            assessmentData = data.questions;
+            currentAssessmentIndex = 0;
+            assessmentAnswers = {};
+            showAssessmentQuestion();
+        } else {
+            alert('Error: ' + data.error);
+            resetAssessment();
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+        resetAssessment();
+    }
+}
+
+function showAssessmentQuestion() {
+    if (!assessmentData) return;
+
+    const q = assessmentData[currentAssessmentIndex];
+    const total = assessmentData.length;
+
+    assessmentQuestionCount.textContent = `Question ${currentAssessmentIndex + 1} of ${total}`;
+    assessmentProgressFill.style.width = `${((currentAssessmentIndex) / total) * 100}%`;
+
+    questionContainer.innerHTML = `
+        <div class="assessment-question animated-fade-in">
+            <h3>${q.question}</h3>
+            <div class="assessment-options">
+                ${Object.entries(q.options).map(([key, value]) => `
+                    <div class="assessment-option" data-key="${key}">
+                        <div class="option-letter">${key}</div>
+                        <div class="option-text">${value}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+
+    document.querySelectorAll('.assessment-option').forEach(option => {
+        option.addEventListener('click', function () {
+            const key = this.dataset.key;
+            assessmentAnswers[currentAssessmentIndex] = key;
+
+            // Animation for selection
+            this.classList.add('selected');
+
+            setTimeout(() => {
+                if (currentAssessmentIndex < total - 1) {
+                    currentAssessmentIndex++;
+                    showAssessmentQuestion();
+                } else {
+                    submitAssessment();
+                }
+            }, 400);
+        });
+    });
+}
+
+async function submitAssessment() {
+    assessmentQuestions.classList.add('hidden');
+    loading.classList.remove('hidden');
+    loading.querySelector('p').textContent = 'Analyzing your career path...';
+
+    try {
+        const response = await fetch('/api/analyze-assessment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                questions: assessmentData,
+                answers: assessmentAnswers
+            })
+        });
+
+        const data = await response.json();
+        loading.classList.add('hidden');
+
+        if (data.success) {
+            displayAssessmentResults(data.result);
+        } else {
+            alert('Error analysis: ' + data.error);
+            resetAssessment();
+        }
+    } catch (error) {
+        loading.classList.add('hidden');
+        alert('Error: ' + error.message);
+        resetAssessment();
+    }
+}
+
+function displayAssessmentResults(result) {
+    assessmentQuestions.classList.add('hidden');
+    assessmentResults.classList.remove('hidden');
+
+    recommendedDomain.textContent = result.recommendedDomain;
+    domainExplanation.textContent = result.explanation;
+    startingTopic.textContent = result.startingTopic;
+
+    // Add effect
+    recommendedDomain.classList.add('animated-zoom-in');
+}
+
+function resetAssessment() {
+    assessmentIntro.classList.remove('hidden');
+    assessmentQuestions.classList.add('hidden');
+    assessmentResults.classList.add('hidden');
+    assessmentData = null;
+    assessmentAnswers = {};
+    currentAssessmentIndex = 0;
 }

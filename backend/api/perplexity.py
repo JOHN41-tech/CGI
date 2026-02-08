@@ -6,7 +6,7 @@ class PerplexityClient:
     def __init__(self, api_key=None, base_url="https://api.perplexity.ai"):
         self.api_key = api_key or os.getenv("PERPLEXITY_API_KEY")
         if not self.api_key:
-            raise ValueError("Perplexity API key is required. Set PERPLEXITY_API_KEY env var or pass it to the constructor.")
+            print("WARNING: Perplexity API key not found. AI features will fail, but the server will remain active.")
         self.base_url = base_url
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
