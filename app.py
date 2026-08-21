@@ -1,8 +1,17 @@
 from flask import Flask, render_template, request, jsonify, session, make_response
 import os
+import sys
 from dotenv import load_dotenv
+
+# Fix Windows 'charmap' codec crashes (UnicodeEncodeError) on print/output
+for _stream in (sys.stdout, sys.stderr):
+    if _stream and hasattr(_stream, 'reconfigure'):
+        try:
+            _stream.reconfigure(encoding='utf-8', errors='replace')
+        except Exception:
+            pass
 from backend.core.session import LearningSession
-from backend.api.perplexity import PerplexityClient
+from backend.api.groq import GroqClient
 import backend.utils.database as db
 from backend.utils.quiz_generator import QuizGenerator
 import json
@@ -21,7 +30,7 @@ app.secret_key = os.getenv('SECRET_KEY', os.urandom(24))
 # Store sessions in memory
 sessions = {}
 quiz_gen = QuizGenerator()
-perplexity_client = PerplexityClient()
+groq_client = GroqClient()
 mock_test_gen = MockTestGenerator()
 
 @app.route('/')
@@ -159,7 +168,7 @@ User question: {message}
 Provide a clear, helpful answer in your assigned style ({style}) that relates to their current learning step."""
         
         messages = [{"role": "user", "content": context}]
-        response = perplexity_client.chat_completion(messages)
+        response = groq_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
         # Save to database
@@ -381,7 +390,7 @@ def get_resources():
         No other text."""
         
         messages = [{"role": "user", "content": prompt}]
-        response = perplexity_client.chat_completion(messages)
+        response = groq_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
         # Extract JSON from response if there's any markdown wrapping
@@ -430,7 +439,7 @@ def generate_assessment():
         Return ONLY the JSON list."""
         
         messages = [{"role": "user", "content": prompt}]
-        response = perplexity_client.chat_completion(messages)
+        response = groq_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
         # Extract JSON
@@ -484,7 +493,7 @@ def analyze_assessment():
         Return ONLY the JSON object."""
         
         messages = [{"role": "user", "content": prompt}]
-        response = perplexity_client.chat_completion(messages)
+        response = groq_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
         # Extract JSON
@@ -567,7 +576,7 @@ def analyze_resume():
         Return ONLY the JSON object."""
         
         messages = [{"role": "user", "content": prompt}]
-        response = perplexity_client.chat_completion(messages)
+        response = groq_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
         # Extract JSON
@@ -701,7 +710,7 @@ def get_job_market_data():
         Return ONLY the JSON object."""
         
         messages = [{"role": "user", "content": prompt}]
-        response = perplexity_client.chat_completion(messages)
+        response = groq_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
         # Extract JSON

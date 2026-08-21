@@ -1,10 +1,10 @@
-from backend.api.perplexity import PerplexityClient
+from backend.api.groq import GroqClient
 import json
 import re
 
 class MockTestGenerator:
     def __init__(self):
-        self.client = PerplexityClient()
+        self.client = GroqClient()
 
     def generate_mock_test(self, topic):
         """Generate a comprehensive mock test with MCQs and Subjective questions"""

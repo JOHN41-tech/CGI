@@ -466,7 +466,7 @@ async function fetchRelatedResources() {
 
     try {
         // We'll use the search API if available, or just mock some relevant links for now
-        // For a real app, you'd call a Perplexity-powered endpoint here
+        // For a real app, you'd call a Groq-powered endpoint here
         const response = await fetch('/api/get-resources', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

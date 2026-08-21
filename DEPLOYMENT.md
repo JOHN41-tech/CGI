@@ -5,17 +5,17 @@
 ### Prerequisites
 - Docker installed
 - Docker Compose installed (optional, but recommended)
-- Perplexity API key
+- Groq API key
 
 ### Option 1: Docker Compose (Easiest)
 
 1. **Set your API key:**
    ```bash
    # On Windows PowerShell
-   $env:PERPLEXITY_API_KEY="your_api_key_here"
+   $env:GROQ_API_KEY="your_api_key_here"
    
    # On Linux/Mac
-   export PERPLEXITY_API_KEY="your_api_key_here"
+   export GROQ_API_KEY="your_api_key_here"
    ```
 
 2. **Build and run:**
@@ -47,7 +47,7 @@
    ```bash
    docker run -d \
      -p 5000:5000 \
-     -e PERPLEXITY_API_KEY=your_key_here \
+     -e GROQ_API_KEY=your_key_here \
      -v ${PWD}/learning_assistant.db:/app/learning_assistant.db \
      --name ai-learning-assistant \
      ai-learning-assistant
@@ -74,7 +74,7 @@
 
 3. Set environment variable:
    ```bash
-   railway variables set PERPLEXITY_API_KEY=your_key_here
+   railway variables set GROQ_API_KEY=your_key_here
    ```
 
 ### Deploy to Render
@@ -84,7 +84,7 @@
 3. Create new Web Service
 4. Connect your GitHub repository
 5. Set environment variables:
-   - `PERPLEXITY_API_KEY`: your_key_here
+   - `GROQ_API_KEY`: your_key_here
 6. Deploy!
 
 ### Deploy to Fly.io
@@ -102,7 +102,7 @@
 
 3. Set secrets:
    ```bash
-   fly secrets set PERPLEXITY_API_KEY=your_key_here
+   fly secrets set GROQ_API_KEY=your_key_here
    ```
 
 4. Deploy:
@@ -135,14 +135,14 @@
    gcloud run deploy ai-learning-assistant \
      --image gcr.io/<project-id>/ai-learning-assistant \
      --platform managed \
-     --set-env-vars PERPLEXITY_API_KEY=your_key_here \
+     --set-env-vars GROQ_API_KEY=your_key_here \
      --allow-unauthenticated
    ```
 
 ## Environment Variables
 
 Required:
-- `PERPLEXITY_API_KEY` - Your Perplexity API key
+- `GROQ_API_KEY` - Your Groq API key
 
 Optional:
 - `PORT` - Port (default: 5000)
@@ -174,6 +174,6 @@ The SQLite database (`learning_assistant.db`) stores:
 - Verify database file exists
 
 ### API errors
-- Verify Perplexity API key is valid
+- Verify Groq API key is valid
 - Check API rate limits
 - Review application logs

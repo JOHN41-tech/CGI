@@ -1,9 +1,9 @@
 from backend.core.roadmap import Roadmap
-from backend.api.perplexity import PerplexityClient
+from backend.api.groq import GroqClient
 
 class LearningSession:
     def __init__(self, persona="General", difficulty="Intermediate"):
-        self.client = PerplexityClient()
+        self.client = GroqClient()
         self.roadmap = None
         self.current_step_index = -1
         self.persona = persona
@@ -31,7 +31,7 @@ class LearningSession:
 
     def get_detailed_guide_for_step(self):
         """
-        Asks Perplexity for a detailed guide on the current step.
+        Asks Groq for a detailed guide on the current step.
         """
         step = self.get_current_step()
         if not step:

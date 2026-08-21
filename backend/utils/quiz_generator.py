@@ -1,10 +1,10 @@
-from backend.api.perplexity import PerplexityClient
+from backend.api.groq import GroqClient
 import json
 import re
 
 class QuizGenerator:
     def __init__(self):
-        self.client = PerplexityClient()
+        self.client = GroqClient()
     
     def generate_quiz(self, topic, step_title, step_details):
         """Generate a quiz for a specific learning step"""
