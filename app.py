@@ -19,6 +19,7 @@ from pypdf import PdfReader
 import docx
 import io
 from backend.utils.mock_test import MockTestGenerator
+from backend.utils.json_parser import parse_model_json
 
 load_dotenv()
 
@@ -393,13 +394,7 @@ def get_resources():
         response = gemma_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
-        # Extract JSON from response if there's any markdown wrapping
-        if "```json" in ai_response:
-            ai_response = ai_response.split("```json")[1].split("```")[0].strip()
-        elif "```" in ai_response:
-            ai_response = ai_response.split("```")[1].split("```")[0].strip()
-            
-        resources = json.loads(ai_response)
+        resources = parse_model_json(ai_response, list)
         
         return jsonify({
             'success': True,
@@ -433,22 +428,16 @@ def generate_assessment():
               "C": "Option C text",
               "D": "Option D text"
             }
-          },
-          ...
+          }
         ]
+        The example shows one item; return exactly 10 complete question objects. Do not use ellipses or markdown fences.
         Return ONLY the JSON list."""
         
         messages = [{"role": "user", "content": prompt}]
         response = gemma_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
-        # Extract JSON
-        if "```json" in ai_response:
-            ai_response = ai_response.split("```json")[1].split("```")[0].strip()
-        elif "```" in ai_response:
-            ai_response = ai_response.split("```")[1].split("```")[0].strip()
-            
-        questions = json.loads(ai_response)
+        questions = parse_model_json(ai_response, list)
         
         return jsonify({
             'success': True,
@@ -496,13 +485,7 @@ def analyze_assessment():
         response = gemma_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
-        # Extract JSON
-        if "```json" in ai_response:
-            ai_response = ai_response.split("```json")[1].split("```")[0].strip()
-        elif "```" in ai_response:
-            ai_response = ai_response.split("```")[1].split("```")[0].strip()
-            
-        result = json.loads(ai_response)
+        result = parse_model_json(ai_response, dict)
         
         return jsonify({
             'success': True,
@@ -566,26 +549,21 @@ def analyze_resume():
         
         Return your response EXACTLY as a JSON object:
         {{
-          "atsScore": 85, (a number between 0-100)
-          "verdict": "Strong Match", (e.g., Needs Work, Fair, Strong Match, Elite)
+          "atsScore": 85,
+          "verdict": "Strong Match",
           "verdictText": "One sentence summary about ATS compatibility.",
           "strengths": ["list of 3 points"],
           "improvements": ["list of 3 points"],
           "recommendations": ["list of 3 points"]
         }}
+        Use an integer from 0 to 100 for atsScore and choose a concise verdict such as Needs Work, Fair, Strong Match, or Elite.
         Return ONLY the JSON object."""
         
         messages = [{"role": "user", "content": prompt}]
         response = gemma_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
-        # Extract JSON
-        if "```json" in ai_response:
-            ai_response = ai_response.split("```json")[1].split("```")[0].strip()
-        elif "```" in ai_response:
-            ai_response = ai_response.split("```")[1].split("```")[0].strip()
-            
-        analysis = json.loads(ai_response)
+        analysis = parse_model_json(ai_response, dict)
         
         return jsonify({
             'success': True,
@@ -676,11 +654,11 @@ def get_job_market_data():
         {{
           "trends": {{
             "labels": ["Domain 1", "Domain 2", "Domain 3", "Domain 4", "Domain 5"],
-            "values": [number1-100, number2-100, number3-100, number4-100, number5-100]
+            "values": [68, 82, 74, 63, 71]
           }},
           "domainTraffic": {{
             "labels": ["Month 1", "Month 2", "Month 3", "Month 4", "Month 5", "Month 6"],
-            "values": [number1, number2, number3, number4, number5, number6]
+            "values": [1200, 1350, 1480, 1575, 1690, 1820]
           }},
           "salaries": {{
             "fresher": "$60k - $80k",
@@ -713,13 +691,7 @@ def get_job_market_data():
         response = gemma_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
-        # Extract JSON
-        if "```json" in ai_response:
-            ai_response = ai_response.split("```json")[1].split("```")[0].strip()
-        elif "```" in ai_response:
-            ai_response = ai_response.split("```")[1].split("```")[0].strip()
-            
-        data = json.loads(ai_response)
+        data = parse_model_json(ai_response, dict)
         data['domain'] = domain
         
         return jsonify({

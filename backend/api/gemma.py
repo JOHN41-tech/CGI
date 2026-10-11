@@ -84,6 +84,8 @@ class GemmaClient:
             "contents": contents,
             "generationConfig": {"temperature": float(temperature)},
         }
+        if selected_model.startswith("gemma-4"):
+            payload["generationConfig"]["thinkingConfig"] = {"thinkingLevel": "minimal"}
         if system_text:
             payload["systemInstruction"] = {"parts": [{"text": "\n\n".join(system_text)}]}
 
@@ -106,7 +108,11 @@ class GemmaClient:
                 response.raise_for_status()
                 data = response.json()
                 parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
-                text = "".join(part.get("text", "") for part in parts if isinstance(part, dict))
+                text = "".join(
+                    part.get("text", "")
+                    for part in parts
+                    if isinstance(part, dict) and not part.get("thought", False)
+                ).strip()
                 if not text:
                     reason = data.get("promptFeedback", {}).get("blockReason", "No text was returned")
                     raise RuntimeError(f"Gemma returned no text. {reason}")

@@ -1,4 +1,5 @@
 from backend.api.gemma import GemmaClient
+from backend.utils.json_parser import parse_model_json
 import json
 import re
 
@@ -38,13 +39,7 @@ class MockTestGenerator:
         response = self.client.chat_completion(messages, temperature=0.7)
         ai_response = response['choices'][0]['message']['content']
         
-        # Extract JSON
-        if "```json" in ai_response:
-            ai_response = ai_response.split("```json")[1].split("```")[0].strip()
-        elif "```" in ai_response:
-            ai_response = ai_response.split("```")[1].split("```")[0].strip()
-            
-        return json.loads(ai_response)
+        return parse_model_json(ai_response, dict)
 
     def evaluate_test(self, topic, mcq_answers, subjective_answers, questions):
         """Evaluate both MCQ and Subjective answers using AI"""
@@ -108,13 +103,7 @@ class MockTestGenerator:
         response = self.client.chat_completion(messages, temperature=0.3)
         ai_eval_response = response['choices'][0]['message']['content']
         
-        # Extract JSON
-        if "```json" in ai_eval_response:
-            ai_eval_response = ai_eval_response.split("```json")[1].split("```")[0].strip()
-        elif "```" in ai_eval_response:
-            ai_eval_response = ai_eval_response.split("```")[1].split("```")[0].strip()
-            
-        subjective_eval = json.loads(ai_eval_response)
+        subjective_eval = parse_model_json(ai_eval_response, dict)
         
         # Calculate final results
         result = {
