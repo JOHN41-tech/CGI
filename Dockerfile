@@ -25,4 +25,4 @@ EXPOSE 5000
 
 # Run the application
 # Render provides the PORT environment variable, so we bind to it
-CMD gunicorn --bind 0.0.0.0:$PORT app:app
+CMD gunicorn --timeout 150 --bind 0.0.0.0:${PORT:-5000} app:app

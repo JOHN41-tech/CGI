@@ -95,7 +95,7 @@ class GemmaClient:
                     url,
                     headers={"x-goog-api-key": key, "Content-Type": "application/json"},
                     json=payload,
-                    timeout=self.timeout,
+                    timeout=(10, self.timeout),
                 )
                 if response.status_code in self.RETRYABLE_STATUSES and index < len(keys) - 1:
                     last_error = requests.HTTPError(
@@ -114,6 +114,10 @@ class GemmaClient:
                     "model": selected_model,
                     "choices": [{"message": {"role": "assistant", "content": text}}],
                 }
+            except requests.exceptions.Timeout as error:
+                raise RuntimeError(
+                    f"Gemma did not respond within {self.timeout:g} seconds. Please retry."
+                ) from error
             except requests.exceptions.RequestException as error:
                 last_error = error
                 if index == len(keys) - 1:

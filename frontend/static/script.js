@@ -5,6 +5,18 @@ let currentQuiz = null;
 let currentFlashcards = [];
 let currentFlashcardIndex = 0;
 
+async function parseApiResponse(response) {
+    const body = await response.text();
+    try {
+        return JSON.parse(body);
+    } catch (error) {
+        if (body.trimStart().startsWith('<')) {
+            throw new Error(`The server returned an HTML error page (HTTP ${response.status}). The AI request may have timed out; please retry.`);
+        }
+        throw new Error(`The server returned an invalid JSON response (HTTP ${response.status}). Please retry.`);
+    }
+}
+
 // DOM Elements
 const startScreen = document.getElementById('start-screen');
 const learningScreen = document.getElementById('learning-screen');
@@ -284,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadStats() {
     try {
         const response = await fetch('/api/stats');
-        const data = await response.json();
+        const data = await parseApiResponse(response);
         if (data.success) {
             if (statTotalTopics) statTotalTopics.textContent = data.totalTopics;
             if (statCompletedTopics) statCompletedTopics.textContent = data.completedTopics;
@@ -320,7 +332,7 @@ async function startLearning() {
             body: JSON.stringify({ topic, persona, difficulty }),
         });
 
-        const data = await response.json();
+        const data = await parseApiResponse(response);
 
         if (data.success) {
             roadmapData = data;
@@ -472,7 +484,7 @@ async function fetchRelatedResources() {
             body: JSON.stringify({ topic, step: stepTitle })
         });
 
-        const data = await response.json();
+        const data = await parseApiResponse(response);
 
         if (data.success && data.resources) {
             displayResources(data.resources);
@@ -540,7 +552,7 @@ async function loadGuide() {
             method: 'POST',
         });
 
-        const data = await response.json();
+        const data = await parseApiResponse(response);
 
         if (data.success) {
             guideContent.textContent = data.guide;
@@ -563,7 +575,7 @@ async function nextStep() {
             method: 'POST',
         });
 
-        const data = await response.json();
+        const data = await parseApiResponse(response);
 
         if (data.success) {
             if (data.completed) {
@@ -599,7 +611,7 @@ async function saveNote() {
             body: JSON.stringify({ content }),
         });
 
-        const data = await response.json();
+        const data = await parseApiResponse(response);
 
         if (data.success) {
             saveNoteBtn.innerHTML = '<i class="fas fa-check"></i> Saved!';
@@ -615,7 +627,7 @@ async function saveNote() {
 async function loadNote() {
     try {
         const response = await fetch('/api/get-note');
-        const data = await response.json();
+        const data = await parseApiResponse(response);
 
         if (data.success && data.note) {
             notesTextarea.value = data.note;
@@ -643,7 +655,7 @@ async function sendChat() {
             body: JSON.stringify({ message }),
         });
 
-        const data = await response.json();
+        const data = await parseApiResponse(response);
 
         if (data.success) {
             addChatMessage('assistant', data.response);
@@ -676,7 +688,7 @@ function clearChat() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         })
-            .then(response => response.json())
+            .then(response => parseApiResponse(response))
             .then(data => {
                 if (data.success) {
                     chatMessages.innerHTML = '';
@@ -702,7 +714,7 @@ async function generateQuiz() {
             method: 'POST',
         });
 
-        const data = await response.json();
+        const data = await parseApiResponse(response);
 
         if (data.success) {
             currentQuiz = data.questions;
@@ -769,7 +781,7 @@ async function submitQuiz() {
             body: JSON.stringify({ answers, questions: currentQuiz }),
         });
 
-        const data = await response.json();
+        const data = await parseApiResponse(response);
 
         if (data.success) {
             displayQuizResults(data);
@@ -845,7 +857,7 @@ async function startAssessment() {
 
     try {
         const response = await fetch('/api/generate-assessment', { method: 'POST' });
-        const data = await response.json();
+        const data = await parseApiResponse(response);
 
         if (data.success) {
             assessmentData = data.questions;
@@ -920,7 +932,7 @@ async function submitAssessment() {
             })
         });
 
-        const data = await response.json();
+        const data = await parseApiResponse(response);
         loading.classList.add('hidden');
 
         if (data.success) {
