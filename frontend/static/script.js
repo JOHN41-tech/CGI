@@ -100,8 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
             introSplash.classList.add('reveal');
             setTimeout(() => {
                 introSplash.style.display = 'none';
-            }, 1000); // Wait for the split animation to finish
-        }, 3000); // Show splash for 3 seconds
+            }, 650); // Let the short reveal finish without delaying the first interaction
+        }, 450);
     }
 });
 
@@ -286,9 +286,9 @@ async function loadStats() {
         const response = await fetch('/api/stats');
         const data = await response.json();
         if (data.success) {
-            statTotalTopics.textContent = data.totalTopics;
-            statCompletedTopics.textContent = data.completedTopics;
-            statTotalProgress.textContent = `${data.progress}%`;
+            if (statTotalTopics) statTotalTopics.textContent = data.totalTopics;
+            if (statCompletedTopics) statCompletedTopics.textContent = data.completedTopics;
+            if (statTotalProgress) statTotalProgress.textContent = `${data.progress}%`;
         }
     } catch (error) {
         console.error('Error loading stats:', error);
@@ -465,8 +465,7 @@ async function fetchRelatedResources() {
     resourcesList.innerHTML = '<div class="guide-loading"><i class="fas fa-spinner fa-spin"></i></div>';
 
     try {
-        // We'll use the search API if available, or just mock some relevant links for now
-        // For a real app, you'd call a Groq-powered endpoint here
+        // Use the resource endpoint when available, then fall back to relevant search links.
         const response = await fetch('/api/get-resources', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

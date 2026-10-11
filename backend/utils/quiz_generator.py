@@ -1,10 +1,10 @@
-from backend.api.groq import GroqClient
+from backend.api.gemma import GemmaClient
 import json
 import re
 
 class QuizGenerator:
     def __init__(self):
-        self.client = GroqClient()
+        self.client = GemmaClient()
     
     def generate_quiz(self, topic, step_title, step_details):
         """Generate a quiz for a specific learning step"""

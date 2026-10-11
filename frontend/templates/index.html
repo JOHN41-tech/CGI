@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voyager</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='refresh.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
@@ -25,90 +26,94 @@
 
         <!-- Start Screen -->
         <div id="start-screen" class="screen active">
-            <div class="container animated-fade-in">
-                <header>
-                    <div class="logo">
-                        <img src="{{ url_for('static', filename='images/voyager_logo.png') }}" alt="Voyager Logo"
-                            class="main-logo">
-                    </div>
-                    <h1 class="animated-slide-down">Voyager</h1>
-                    <p class="subtitle animated-fade-in-delayed">Your futuristic companion for mastering any subject
-                    </p>
+            <div class="container home-container animated-fade-in">
+                <header class="home-header">
+                    <a class="brand-lockup" href="/" aria-label="Voyager home">
+                        <img src="{{ url_for('static', filename='images/voyager_logo.png') }}" alt="" class="main-logo">
+                        <span class="brand-name">voyager<span class="brand-period">.</span><small>LEARNING STUDIO</small></span>
+                    </a>
+                    <div class="header-status"><span class="status-dot"></span> Your next skill starts here</div>
                 </header>
 
-                <!-- Career Assessment Section -->
-                <div id="assessment-section" class="assessment-card animated-zoom-in">
-                    <div id="assessment-intro">
-                        <h2>Discover Your Career Path</h2>
-                        <p>Take our AI-powered assessment to find the perfect tech domain based on your strengths and
-                            interests.</p>
-                        <button id="start-assessment-btn" class="btn-primary">
-                            <i class="fas fa-compass"></i> Start Assessment
-                        </button>
-                    </div>
+                <main class="home-hero">
+                    <section class="hero-copy" aria-labelledby="home-title">
+                        <div class="eyebrow"><span class="eyebrow-line"></span> A clearer way to learn</div>
+                        <h1 id="home-title">Turn curiosity into <span>real capability.</span></h1>
+                        <p class="hero-description">Build a learning path around what you want to know. Voyager breaks big topics into focused steps, with an AI guide beside you.</p>
 
-                    <div id="assessment-questions" class="hidden">
-                        <div class="assessment-progress">
-                            <div class="progress-bar">
-                                <div id="assessment-progress-fill" class="progress-fill" style="width: 0%"></div>
-                            </div>
-                            <span id="assessment-question-count">Question 1 of 10</span>
-                        </div>
-                        <div id="question-container">
-                            <!-- Populated by JS -->
-                        </div>
-                    </div>
-
-                    <div id="assessment-results" class="hidden">
-                        <div class="result-header">
-                            <i class="fas fa-trophy"></i>
-                            <h3>Your Career Match</h3>
-                        </div>
-                        <div id="result-content" class="result-body">
-                            <h2 id="recommended-domain" class="recommended-title"></h2>
-                            <p id="domain-explanation" class="explanation-text"></p>
-                            <div class="next-steps">
-                                <p>Recommended starting topic: <strong id="starting-topic"
-                                        class="topic-highlight"></strong></p>
-                                <button id="start-discovery-btn" class="btn-primary">
-                                    <i class="fas fa-rocket"></i> Start Career Path
+                        <div id="manual-topic-entry" class="launch-card">
+                            <label class="field-label" for="topic-input">What would you like to learn?</label>
+                            <div class="topic-entry-row">
+                                <input type="text" id="topic-input" placeholder="e.g. product design, Python, climate science" autocomplete="off" aria-label="Topic to learn">
+                                <button id="start-btn" class="btn-primary launch-button" type="button">
+                                    <span>Build my path</span><i class="fas fa-arrow-right" aria-hidden="true"></i>
                                 </button>
                             </div>
+                            <div class="launch-options">
+                                <div class="option-item">
+                                    <label for="persona-select"><i class="fas fa-user-graduate" aria-hidden="true"></i> Teaching style</label>
+                                    <select id="persona-select">
+                                        <option value="General">Clear &amp; balanced</option>
+                                        <option value="Scientist">Detailed &amp; technical</option>
+                                        <option value="ELI5">Simple &amp; intuitive</option>
+                                        <option value="Socratic">Question-led</option>
+                                    </select>
+                                </div>
+                                <div class="option-item">
+                                    <label for="difficulty-select"><i class="fas fa-layer-group" aria-hidden="true"></i> Starting level</label>
+                                    <select id="difficulty-select">
+                                        <option value="Beginner">Beginner</option>
+                                        <option value="Intermediate" selected>Intermediate</option>
+                                        <option value="Advanced">Advanced</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="examples" aria-label="Popular topics">
+                                <span class="example-label">Try</span>
+                                <button type="button" class="example-btn" data-topic="Generative AI">Generative AI</button>
+                                <button type="button" class="example-btn" data-topic="Personal finance">Personal finance</button>
+                                <button type="button" class="example-btn" data-topic="UX research">UX research</button>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Hidden Original Start Options (for reference or manual entry) -->
-                <div id="manual-topic-entry" class="hidden">
-                    <div class="welcome-card animated-zoom-in">
-                        <h2>Or enter a topic manually</h2>
-                        <div class="advanced-options">
-                            <div class="option-item">
-                                <label><i class="fas fa-user-graduate"></i> Persona</label>
-                                <select id="persona-select">
-                                    <option value="General">General</option>
-                                    <option value="Scientist">Scientist</option>
-                                    <option value="ELI5">ELI5 (Simple)</option>
-                                    <option value="Socratic">Socratic</option>
-                                </select>
-                            </div>
-                            <div class="option-item">
-                                <label><i class="fas fa-layer-group"></i> Difficulty</label>
-                                <select id="difficulty-select">
-                                    <option value="Beginner">Beginner</option>
-                                    <option value="Intermediate" selected>Intermediate</option>
-                                    <option value="Advanced">Advanced</option>
-                                </select>
-                            </div>
+                        <div class="stats-dashboard" aria-label="Your learning stats">
+                            <div class="stat-item"><span class="stat-value" id="stat-total-topics">—</span><span class="stat-label">Paths explored</span></div>
+                            <div class="stat-item"><span class="stat-value" id="stat-completed-topics">—</span><span class="stat-label">Paths completed</span></div>
+                            <div class="stat-item"><span class="stat-value" id="stat-total-progress">—</span><span class="stat-label">Overall progress</span></div>
                         </div>
-                        <div class="input-group">
-                            <input type="text" id="topic-input" placeholder="Enter any topic..." />
-                            <button id="start-btn" class="btn-primary">
-                                <i class="fas fa-rocket"></i> Start Learning
+                    </section>
+
+                    <aside id="assessment-section" class="assessment-card" aria-labelledby="assessment-title">
+                        <div id="assessment-intro">
+                            <div class="assessment-art" aria-hidden="true"><span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><i class="fas fa-compass"></i><span class="orbit-star">✦</span></div>
+                            <div class="assessment-kicker">A good place to begin</div>
+                            <h2 id="assessment-title">Find your direction.</h2>
+                            <p>Not sure which field fits you? Take a short, AI-guided career assessment based on your strengths and interests.</p>
+                            <div class="assessment-meta"><span><i class="far fa-clock" aria-hidden="true"></i> About 3 minutes</span><span><i class="fas fa-sparkles" aria-hidden="true"></i> Personalised result</span></div>
+                            <button id="start-assessment-btn" class="btn-primary assessment-button" type="button">
+                                <i class="fas fa-compass" aria-hidden="true"></i> Explore career paths <i class="fas fa-arrow-right button-arrow" aria-hidden="true"></i>
                             </button>
                         </div>
-                    </div>
-                </div>
+                        <div id="assessment-questions" class="hidden">
+                            <div class="assessment-progress">
+                                <div class="assessment-progress-head"><span>CAREER FINDER</span><span id="assessment-question-count">Question 1 of 10</span></div>
+                                <div class="progress-bar"><div id="assessment-progress-fill" class="progress-fill" style="width: 0%"></div></div>
+                            </div>
+                            <div id="question-container"><!-- Populated by JS --></div>
+                        </div>
+                        <div id="assessment-results" class="hidden">
+                            <div class="result-header"><i class="fas fa-trophy" aria-hidden="true"></i><h3>Your Career Match</h3></div>
+                            <div id="result-content" class="result-body">
+                                <h2 id="recommended-domain" class="recommended-title"></h2>
+                                <p id="domain-explanation" class="explanation-text"></p>
+                                <div class="next-steps"><p>Your suggested starting topic</p><strong id="starting-topic" class="topic-highlight"></strong>
+                                    <button id="start-discovery-btn" class="btn-primary" type="button"><i class="fas fa-rocket" aria-hidden="true"></i> Start this path</button>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </main>
+                <footer class="home-footer"><span>Curiosity is a skill. Keep building it.</span><span>Designed for your next chapter <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></span></footer>
             </div>
         </div>
 

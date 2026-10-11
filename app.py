@@ -11,7 +11,7 @@ for _stream in (sys.stdout, sys.stderr):
         except Exception:
             pass
 from backend.core.session import LearningSession
-from backend.api.groq import GroqClient
+from backend.api.gemma import GemmaClient
 import backend.utils.database as db
 from backend.utils.quiz_generator import QuizGenerator
 import json
@@ -30,7 +30,7 @@ app.secret_key = os.getenv('SECRET_KEY', os.urandom(24))
 # Store sessions in memory
 sessions = {}
 quiz_gen = QuizGenerator()
-groq_client = GroqClient()
+gemma_client = GemmaClient()
 mock_test_gen = MockTestGenerator()
 
 @app.route('/')
@@ -168,7 +168,7 @@ User question: {message}
 Provide a clear, helpful answer in your assigned style ({style}) that relates to their current learning step."""
         
         messages = [{"role": "user", "content": context}]
-        response = groq_client.chat_completion(messages)
+        response = gemma_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
         # Save to database
@@ -390,7 +390,7 @@ def get_resources():
         No other text."""
         
         messages = [{"role": "user", "content": prompt}]
-        response = groq_client.chat_completion(messages)
+        response = gemma_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
         # Extract JSON from response if there's any markdown wrapping
@@ -439,7 +439,7 @@ def generate_assessment():
         Return ONLY the JSON list."""
         
         messages = [{"role": "user", "content": prompt}]
-        response = groq_client.chat_completion(messages)
+        response = gemma_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
         # Extract JSON
@@ -493,7 +493,7 @@ def analyze_assessment():
         Return ONLY the JSON object."""
         
         messages = [{"role": "user", "content": prompt}]
-        response = groq_client.chat_completion(messages)
+        response = gemma_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
         # Extract JSON
@@ -576,7 +576,7 @@ def analyze_resume():
         Return ONLY the JSON object."""
         
         messages = [{"role": "user", "content": prompt}]
-        response = groq_client.chat_completion(messages)
+        response = gemma_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
         # Extract JSON
@@ -710,7 +710,7 @@ def get_job_market_data():
         Return ONLY the JSON object."""
         
         messages = [{"role": "user", "content": prompt}]
-        response = groq_client.chat_completion(messages)
+        response = gemma_client.chat_completion(messages)
         ai_response = response['choices'][0]['message']['content']
         
         # Extract JSON

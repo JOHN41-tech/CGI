@@ -5,17 +5,17 @@
 ### Prerequisites
 - Docker installed
 - Docker Compose installed (optional, but recommended)
-- Groq API key
+- Google Gemini API keys
 
 ### Option 1: Docker Compose (Easiest)
 
-1. **Set your API key:**
+1. **Set your Gemma API keys:**
    ```bash
    # On Windows PowerShell
-   $env:GROQ_API_KEY="your_api_key_here"
+   $env:GEMMA_API_KEYS="key_one,key_two,key_three"
    
    # On Linux/Mac
-   export GROQ_API_KEY="your_api_key_here"
+   export GEMMA_API_KEYS="key_one,key_two,key_three"
    ```
 
 2. **Build and run:**
@@ -47,7 +47,7 @@
    ```bash
    docker run -d \
      -p 5000:5000 \
-     -e GROQ_API_KEY=your_key_here \
+     -e GEMMA_API_KEYS=key_one,key_two,key_three \
      -v ${PWD}/learning_assistant.db:/app/learning_assistant.db \
      --name ai-learning-assistant \
      ai-learning-assistant
@@ -74,7 +74,7 @@
 
 3. Set environment variable:
    ```bash
-   railway variables set GROQ_API_KEY=your_key_here
+   railway variables set GEMMA_API_KEYS=key_one,key_two,key_three
    ```
 
 ### Deploy to Render
@@ -84,7 +84,7 @@
 3. Create new Web Service
 4. Connect your GitHub repository
 5. Set environment variables:
-   - `GROQ_API_KEY`: your_key_here
+   - `GEMMA_API_KEYS`: key_one,key_two,key_three
 6. Deploy!
 
 ### Deploy to Fly.io
@@ -102,7 +102,7 @@
 
 3. Set secrets:
    ```bash
-   fly secrets set GROQ_API_KEY=your_key_here
+   fly secrets set GEMMA_API_KEYS=key_one,key_two,key_three
    ```
 
 4. Deploy:
@@ -135,16 +135,18 @@
    gcloud run deploy ai-learning-assistant \
      --image gcr.io/<project-id>/ai-learning-assistant \
      --platform managed \
-     --set-env-vars GROQ_API_KEY=your_key_here \
+     --set-env-vars GEMMA_API_KEYS=key_one,key_two,key_three \
      --allow-unauthenticated
    ```
 
 ## Environment Variables
 
 Required:
-- `GROQ_API_KEY` - Your Groq API key
+- `GEMMA_API_KEYS` - Comma-separated Google Gemini API keys (store as server secrets; do not commit them)
 
 Optional:
+- `GEMMA_MODEL` - Gemma model ID (default: `gemma-4-26b-a4b-it`)
+- `GEMMA_API_TIMEOUT` - Request timeout in seconds (default: `90`)
 - `PORT` - Port (default: 5000)
 - `HOST` - Host (default: 0.0.0.0)
 - `FLASK_ENV` - Environment (default: development)
@@ -174,6 +176,6 @@ The SQLite database (`learning_assistant.db`) stores:
 - Verify database file exists
 
 ### API errors
-- Verify Groq API key is valid
+- Verify each Google Gemini API key is valid and the Gemini Developer API is enabled for its project
 - Check API rate limits
 - Review application logs

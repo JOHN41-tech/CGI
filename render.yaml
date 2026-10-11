@@ -7,8 +7,10 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
-      - key: GROQ_API_KEY
+      - key: GEMMA_API_KEYS
         sync: false
+      - key: GEMMA_MODEL
+        value: gemma-4-26b-a4b-it
       - key: SECRET_KEY
         generateValue: true
       - key: FLASK_ENV

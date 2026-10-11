@@ -1,6 +1,6 @@
-# AI Learning Assistant
+# Voyager — AI Learning Studio
 
-A fully functional AI-powered learning assistant with interactive features.
+An AI-powered learning assistant for building personalized roadmaps, getting step-by-step guidance, and practicing with quizzes.
 
 ## Project Structure
 
@@ -8,7 +8,7 @@ A fully functional AI-powered learning assistant with interactive features.
 AI AGENT/
 ├── backend/                 # Backend code
 │   ├── api/                # API integrations
-│   │   └── groq.py  # Groq API client
+│   │   └── gemma.py  # Google Gemma client via the Gemini Developer API
 │   ├── core/               # Core business logic
 │   │   ├── roadmap.py     # Roadmap parsing
 │   │   └── session.py     # Session management
@@ -18,7 +18,8 @@ AI AGENT/
 │
 ├── frontend/               # Frontend code
 │   ├── static/            # Static assets
-│   │   ├── style.css     # Styles
+│   │   ├── style.css     # Base styles
+│   │   ├── refresh.css   # Responsive Voyager visual system
 │   │   └── script.js     # JavaScript
 │   └── templates/         # HTML templates
 │       └── index.html    # Main page
@@ -27,7 +28,7 @@ AI AGENT/
 ├── Dockerfile             # Docker configuration
 ├── docker-compose.yml     # Docker Compose configuration
 ├── requirements.txt       # Python dependencies
-├── .env                   # Environment variables (API keys)
+├── .env                   # Local-only environment variables (gitignored)
 ├── .env.example          # Environment template
 ├── .dockerignore         # Docker ignore rules
 ├── .gitignore            # Git ignore rules
@@ -41,7 +42,8 @@ AI AGENT/
 - 📌 Note-taking system
 - 📊 Progress tracking
 - 🗄️ SQLite database persistence
-- 🎨 Dark theme UI
+- 🎨 Responsive Voyager learning studio UI
+- 🧭 Career-path assessment and topic suggestions
 
 ## Local Development
 
@@ -52,12 +54,14 @@ AI AGENT/
    pip install -r requirements.txt
    ```
 
-2. **Configure API key:**
+2. **Configure Gemma API keys:**
    - Copy `.env.example` to `.env`
-   - Add your Groq API key:
+   - Add your Google AI Studio/Gemini API keys as a comma-separated list:
      ```
-     GROQ_API_KEY=your_key_here
+     GEMMA_API_KEYS=key_one,key_two,key_three
      ```
+   - Keep `.env` private. The backend rotates across configured keys and tries another key when Google reports an authentication, quota, or transient service error.
+   - The default model is `gemma-4-26b-a4b-it`; set `GEMMA_MODEL` to change it.
 
 3. **Run the application:**
    ```bash
@@ -73,7 +77,7 @@ AI AGENT/
 
 1. **Set environment variables:**
    ```bash
-   export GROQ_API_KEY=your_key_here
+   export GEMMA_API_KEYS=key_one,key_two,key_three
    ```
 
 2. **Build and run:**
@@ -100,7 +104,7 @@ AI AGENT/
    ```bash
    docker run -d \
      -p 5000:5000 \
-     -e GROQ_API_KEY=your_key_here \
+     -e GEMMA_API_KEYS=key_one,key_two,key_three \
      -v $(pwd)/learning_assistant.db:/app/learning_assistant.db \
      --name ai-learning-assistant \
      ai-learning-assistant
@@ -119,7 +123,9 @@ AI AGENT/
 
 ## Environment Variables
 
-- `GROQ_API_KEY` - Your Groq API key (required)
+- `GEMMA_API_KEYS` - Comma-separated Google Gemini API keys (required; use server-side only)
+- `GEMMA_MODEL` - Gemma model ID (default: `gemma-4-26b-a4b-it`)
+- `GEMMA_API_TIMEOUT` - Request timeout in seconds (default: `90`)
 - `PORT` - Port to run the application (default: 5000)
 - `HOST` - Host to bind to (default: 0.0.0.0)
 - `FLASK_ENV` - Environment mode: development/production (default: development)
@@ -131,7 +137,7 @@ AI AGENT/
 
 1. Push code to GitHub
 2. Connect repository to platform
-3. Set environment variable: `GROQ_API_KEY`
+3. Set environment variable: `GEMMA_API_KEYS`
 4. Deploy!
 
 ### Deploy to AWS/GCP/Azure
@@ -146,7 +152,7 @@ AI AGENT/
 
 - **Backend:** Flask, SQLite, Python
 - **Frontend:** HTML, CSS, JavaScript
-- **AI:** Groq API
+- **AI:** Google Gemma via the Gemini Developer API
 - **Deployment:** Docker, Docker Compose
 
 ## License

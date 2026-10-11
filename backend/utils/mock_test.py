@@ -1,10 +1,10 @@
-from backend.api.groq import GroqClient
+from backend.api.gemma import GemmaClient
 import json
 import re
 
 class MockTestGenerator:
     def __init__(self):
-        self.client = GroqClient()
+        self.client = GemmaClient()
 
     def generate_mock_test(self, topic):
         """Generate a comprehensive mock test with MCQs and Subjective questions"""

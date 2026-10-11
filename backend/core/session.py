@@ -1,9 +1,9 @@
 from backend.core.roadmap import Roadmap
-from backend.api.groq import GroqClient
+from backend.api.gemma import GemmaClient
 
 class LearningSession:
     def __init__(self, persona="General", difficulty="Intermediate"):
-        self.client = GroqClient()
+        self.client = GemmaClient()
         self.roadmap = None
         self.current_step_index = -1
         self.persona = persona
@@ -31,7 +31,7 @@ class LearningSession:
 
     def get_detailed_guide_for_step(self):
         """
-        Asks Groq for a detailed guide on the current step.
+        Asks Gemma for a detailed guide on the current step.
         """
         step = self.get_current_step()
         if not step:
